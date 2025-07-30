@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDA Line Algorithm Visualizer</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a clean, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to enhance Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        /* Style for the table showing calculation steps */
+        .step-table th, .step-table td {
+            text-align: center;
+            padding: 8px 12px;
+            border: 1px solid #4a5568;
+        }
+        .step-table th {
+            background-color: #2d3748;
+            font-weight: 600;
+        }
+        /* Style for code snippets */
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #2d3748;
+            color: #a0aec0;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        /* Ensure canvas is responsive and maintains aspect ratio */
+        canvas {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            background-color: #1a202c;
+        }
+        /* Style for disabled buttons */
+        button:disabled {
+            background-color: #4a5568;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-cyan-400">DDA Line Drawing Algorithm</h1>
+            <p class="mt-2 text-lg text-gray-400">An interactive, step-by-step visualizer.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column: Controls and Explanation -->
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col">
+                <div id="controls" class="mb-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Controls</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Input fields for coordinates -->
+                        <div>
+                            <label for="x1" class="block text-sm font-medium text-gray-300">Start Point (X1, Y1)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="number" id="x1" value="2" class="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                                <input type="number" id="y1" value="3" class="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="x2" class="block text-sm font-medium text-gray-300">End Point (X2, Y2)</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="number" id="x2" value="12" class="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                                <input type="number" id="y2" value="8" class="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Action buttons -->
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        <button id="startBtn" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">Start</button>
+                        <button id="nextStepBtn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-md transition duration-300" disabled>Next Step</button>
+                        <button id="resetBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">Reset</button>
+                    </div>
+                </div>
+
+                <div id="explanation" class="flex-grow">
+                    <h2 class="text-2xl font-semibold mb-4 text-white">Algorithm Explanation</h2>
+                    <div class="space-y-4 text-gray-300">
+                        <p>The Digital Differential Analyzer (DDA) is a simple algorithm used to rasterize lines. It works by calculating the slope of the line and then incrementally stepping along the x and y axes to plot pixels.</p>
+                        
+                        <h3 class="text-lg font-semibold text-cyan-300 mt-4">Step-by-Step Breakdown:</h3>
+                        <ol class="list-decimal list-inside space-y-3">
+                            <li><strong>Calculate Deltas:</strong> Find the total change in x and y.
+                                <br><code>dx = x2 - x1</code>
+                                <br><code>dy = y2 - y1</code></li>
+                            <li><strong>Determine the Number of Steps:</strong> To ensure the line is continuous, we must take as many steps as the larger of the two deltas. This dominant axis will be incremented by exactly 1 pixel per step.
+                                <br><code>steps = max(abs(dx), abs(dy))</code></li>
+                            <li><strong>Calculate Increments:</strong> Find out how much x and y should change in each single step. The increment will be a value between -1 and 1.
+                                <br><code>xIncrement = dx / steps</code>
+                                <br><code>yIncrement = dy / steps</code></li>
+                            <li><strong>The Loop:</strong> Start at <code>(x1, y1)</code>. Loop for the total number of <code>steps</code>, and at each step:
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li>Plot the pixel at the current <code>(round(x), round(y))</code>.</li>
+                                    <li>Update x and y for the next step: <code>x += xIncrement</code>, <code>y += yIncrement</code>.</li>
+                                </ul>
+                            </li>
+                        </ol>
+
+                        <h3 class="text-lg font-semibold text-cyan-300 mt-4">Pros & Cons:</h3>
+                        <p><strong class="text-green-400">Pros:</strong> Simple to understand and implement. Faster than directly using the line equation `y = mx + b` for every pixel.</p>
+                        <p><strong class="text-red-400">Cons:</strong> It uses floating-point calculations (<code>/</code> and <code>+=</code>), which are computationally expensive and can lead to cumulative rounding errors, making the line drift from its true path over long distances.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Canvas, Calculations, and Steps Table -->
+            <div>
+                <div class="bg-gray-800 rounded-xl shadow-lg p-4 mb-8">
+                     <h2 class="text-2xl font-semibold mb-4 text-white text-center">Pixel Grid</h2>
+                    <canvas id="ddaCanvas" width="500" height="500"></canvas>
+                </div>
+
+                <div id="calculation-container" class="bg-gray-800 p-6 rounded-xl shadow-lg">
+                     <h2 class="text-2xl font-semibold mb-4 text-white">Calculations</h2>
+                     <div id="initial-calculations" class="bg-gray-700 p-4 rounded-lg mb-4 hidden">
+                        <!-- Initial calculations populated by JS -->
+                     </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full step-table">
+                            <thead>
+                                <tr>
+                                    <th>Step (k)</th>
+                                    <th>Calculation</th>
+                                    <th>X</th>
+                                    <th>Y</th>
+                                    <th>Plot (X, Y)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="steps-table-body">
+                                <tr><td colspan="5" class="text-gray-500">Click "Start" to set up the line.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('ddaCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const x1Input = document.getElementById('x1');
+            const y1Input = document.getElementById('y1');
+            const x2Input = document.getElementById('x2');
+            const y2Input = document.getElementById('y2');
+            const startBtn = document.getElementById('startBtn');
+            const nextStepBtn = document.getElementById('nextStepBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const initialCalculationsDiv = document.getElementById('initial-calculations');
+            const stepsTableBody = document.getElementById('steps-table-body');
+
+            const gridSize = 25;
+            let ddaState = {};
+
+            function toCanvasX(x) { return x * gridSize; }
+            function toCanvasY(y) { return canvas.height - y * gridSize; }
+
+            function drawGrid() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#2d3748';
+                ctx.lineWidth = 1;
+                for (let x = 0; x <= canvas.width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= canvas.height; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+                ctx.strokeStyle = '#4a5568';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height);
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, canvas.height);
+                ctx.stroke();
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                for (let x = 5; x <= canvas.width / gridSize; x += 5) {
+                    ctx.fillText(x, toCanvasX(x), canvas.height - 15);
+                }
+                for (let y = 5; y <= canvas.height / gridSize; y += 5) {
+                    ctx.fillText(y, 15, toCanvasY(y));
+                }
+                ctx.fillText('0', 15, canvas.height - 15);
+            }
+
+            function drawPixel(x, y, color = '#63b3ed', isCurrent = false) {
+                const canvasX = toCanvasX(x);
+                const canvasY = toCanvasY(y + 1);
+                ctx.fillStyle = color;
+                ctx.fillRect(canvasX, canvasY, gridSize, gridSize);
+                if (isCurrent) {
+                    ctx.strokeStyle = '#f6e05e';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(canvasX, canvasY, gridSize, gridSize);
+                }
+            }
+
+            function redrawAllPixels() {
+                drawGrid();
+                if (!ddaState.pixels) return;
+                ddaState.pixels.forEach(p => drawPixel(p.x, p.y));
+            }
+
+            function startDDA() {
+                reset();
+                stepsTableBody.innerHTML = '';
+
+                const x1 = parseInt(x1Input.value);
+                const y1 = parseInt(y1Input.value);
+                const x2 = parseInt(x2Input.value);
+                const y2 = parseInt(y2Input.value);
+                
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const steps = Math.abs(dx) > Math.abs(dy) ? Math.abs(dx) : Math.abs(dy);
+                const xIncrement = steps === 0 ? 0 : dx / steps;
+                const yIncrement = steps === 0 ? 0 : dy / steps;
+
+                initialCalculationsDiv.innerHTML = `
+                    <h3 class="text-xl font-semibold text-white">Initial Setup</h3>
+                    <p><code>dx = ${x2} - ${x1} = ${dx}</code></p>
+                    <p><code>dy = ${y2} - ${y1} = ${dy}</code></p>
+                    <p><code>steps = max(abs(${dx}), abs(${dy})) = ${steps}</code></p>
+                    <p><code>xIncrement = ${dx} / ${steps} = ${xIncrement.toFixed(3)}</code></p>
+                    <p><code>yIncrement = ${dy} / ${steps} = ${yIncrement.toFixed(3)}</code></p>
+                `;
+                initialCalculationsDiv.classList.remove('hidden');
+
+                ddaState = {
+                    x: x1,
+                    y: y1,
+                    k: 0,
+                    steps: steps,
+                    xIncrement: xIncrement,
+                    yIncrement: yIncrement,
+                    pixels: []
+                };
+
+                const plotX = Math.round(ddaState.x);
+                const plotY = Math.round(ddaState.y);
+                ddaState.pixels.push({ x: plotX, y: plotY });
+                redrawAllPixels();
+                drawPixel(plotX, plotY, '#63b3ed', true);
+                
+                const row = stepsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${ddaState.k}</td>
+                    <td class="text-gray-400">Initial Point</td>
+                    <td>${ddaState.x.toFixed(2)}</td>
+                    <td>${ddaState.y.toFixed(2)}</td>
+                    <td>(${plotX}, ${plotY})</td>
+                `;
+
+                startBtn.disabled = true;
+                nextStepBtn.disabled = false;
+                 if (steps === 0) nextStepBtn.disabled = true;
+            }
+
+            function nextStep() {
+                if (ddaState.k >= ddaState.steps) {
+                    nextStepBtn.disabled = true;
+                    const lastPixel = ddaState.pixels[ddaState.pixels.length - 1];
+                    drawPixel(lastPixel.x, lastPixel.y, '#f56565', true);
+                    return;
+                }
+
+                const oldX = ddaState.x;
+                const oldY = ddaState.y;
+
+                ddaState.k++;
+                ddaState.x += ddaState.xIncrement;
+                ddaState.y += ddaState.yIncrement;
+                
+                const plotX = Math.round(ddaState.x);
+                const plotY = Math.round(ddaState.y);
+                ddaState.pixels.push({ x: plotX, y: plotY });
+                redrawAllPixels();
+                drawPixel(plotX, plotY, '#63b3ed', true);
+
+                const row = stepsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${ddaState.k}</td>
+                    <td><code class="text-xs">x = ${oldX.toFixed(2)} + ${ddaState.xIncrement.toFixed(2)}<br>y = ${oldY.toFixed(2)} + ${ddaState.yIncrement.toFixed(2)}</code></td>
+                    <td>${ddaState.x.toFixed(2)}</td>
+                    <td>${ddaState.y.toFixed(2)}</td>
+                    <td>(${plotX}, ${plotY})</td>
+                `;
+
+                if (ddaState.k >= ddaState.steps) {
+                    nextStepBtn.disabled = true;
+                    drawPixel(plotX, plotY, '#f56565', true);
+                }
+            }
+
+            function reset() {
+                drawGrid();
+                stepsTableBody.innerHTML = '<tr><td colspan="5" class="text-gray-500">Click "Start" to set up the line.</td></tr>';
+                initialCalculationsDiv.classList.add('hidden');
+                initialCalculationsDiv.innerHTML = '';
+                ddaState = {};
+                startBtn.disabled = false;
+                nextStepBtn.disabled = true;
+            }
+            
+            startBtn.addEventListener('click', startDDA);
+            nextStepBtn.addEventListener('click', nextStep);
+            resetBtn.addEventListener('click', reset);
+
+            drawGrid();
+        });
+    </script>
+</body>
+</html>

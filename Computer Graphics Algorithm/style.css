@@ -1,0 +1,37 @@
+/* Base Setup */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Table Styles */
+.step-table th,
+.step-table td {
+  padding: 10px;
+  border: 1px solid #4b5563;
+  text-align: center;
+}
+
+.step-table th {
+  background-color: #1e293b;
+  color: #60a5fa;
+}
+
+.step-table td {
+  background-color: #111827;
+  color: #d1d5db;
+}
+
+/* Input focus ring color */
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Canvas */
+canvas {
+  background-color: #111827;
+  border: 1px solid #374151;
+  max-width: 100%;
+  height: auto;
+}
