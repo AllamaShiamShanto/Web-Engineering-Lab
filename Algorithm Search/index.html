@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Search Algorithm Visualizer</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Search Algorithm Visualizer</h1>
+    
+    <div class="controls">
+      <input type="text" id="arrayInput" placeholder="Enter numbers (e.g. 3,1,4,5,2)" />
+      <input type="number" id="targetInput" placeholder="Search Target" />
+      <select id="algorithm">
+        <option value="linear">Linear Search</option>
+        <option value="binary">Binary Search</option>
+        <option value="jump">Jump Search</option>
+        <option value="interpolation">Interpolation Search</option>
+        <option value="exponential">Exponential Search</option>
+      </select>
+      <button onclick="startSearch()">Start Search</button>
+    </div>
+
+    <div id="visualizer" class="visualizer"></div>
+
+    <p id="result"></p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
